@@ -33,8 +33,8 @@ class ComponentSocket extends Thread {
     ComponentSocket(String addr, int port, Handler callbacks) {
         serverAddress = addr;
         serverPort = port;
-        Log.d(MainActivity.TAG, "Server Address: " + serverAddress);
-        Log.d(MainActivity.TAG, "Server Port: " + serverPort);
+        //Log.d(MainActivity.TAG, "Server Address: " + serverAddress);
+        //Log.d(MainActivity.TAG, "Server Port: " + serverPort);
         callback = callbacks;
     }
 
@@ -57,7 +57,7 @@ class ComponentSocket extends Thread {
                     //Check if there is an incoming message.
                     KeyValueList kvList = msgDecoder.getMsg();
                     if (kvList.size() > 1) {
-                        Log.e(MainActivity.TAG, "Received raw: <" + kvList.encodedString() + ">");
+                        //Log.e(MainActivity.TAG, "Received raw: <" + kvList.encodedString() + ">");
                         //Tell the activity that a new message has been received.
                         Message msg = callback.obtainMessage(MainActivity.MESSAGE_RECEIVED);
                         msg.obj = kvList.toString();
@@ -81,13 +81,13 @@ class ComponentSocket extends Thread {
         killThread = true;
         Message message = callback.obtainMessage(MainActivity.DISCONNECTED);
         callback.sendMessage(message);
-        Log.e(MainActivity.TAG, "Sock thread killed." );
+        //Log.e(MainActivity.TAG, "Sock thread killed." );
     }
     //The function is called by the activity and used to set the output message
     void setMessage(KeyValueList kvList) {
         if(msgEncoder!=null){
             try {
-                Log.e(MainActivity.TAG, "Sending messsage." );
+                //Log.e(MainActivity.TAG, "Sending messsage." );
                 msgEncoder.sendMsg(kvList);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -108,7 +108,7 @@ class ComponentSocket extends Thread {
         try {
             msgEncoder.sendMsg(reply);
         } catch (IOException e) {
-            Log.e(MainActivity.TAG, "IOException: " + e.toString());
+            //Log.e(MainActivity.TAG, "IOException: " + e.toString());
         }
     }
 }

@@ -1,4 +1,4 @@
-package tdr.sisprjremote;
+package com.example.votingsoftware;
 
 import java.io.BufferedReader;
 import java.io.IOException;

@@ -1,4 +1,4 @@
-package tdr.sisprjremote;
+package com.example.votingsoftware;
 
 import android.os.Handler;
 import android.os.Message;

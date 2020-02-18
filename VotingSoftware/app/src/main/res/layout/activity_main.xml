@@ -84,4 +84,16 @@
 
     </RelativeLayout>
 
+    <TextView
+        android:id="@+id/messageReceivedListText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Messages Received:" />
+
+    <TextView
+        android:id="@+id/messageReceivedList"
+        android:layout_width="match_parent"
+        android:layout_height="481dp"
+        android:scrollbars="vertical" />
+
 </LinearLayout>

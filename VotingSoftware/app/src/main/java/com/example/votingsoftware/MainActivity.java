@@ -94,7 +94,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     //Pass a message to the socket thread and update the sent-text view.
-    static void sentMessage(final KeyValueList messageInfo){
+    static void sendMessage(final KeyValueList messageInfo){
         if(client!=null){
             Timer timer = new Timer();
             timer.schedule(new TimerTask() {
@@ -170,14 +170,8 @@ public class MainActivity extends AppCompatActivity {
                             } else {
                                 client = new ComponentSocket(serverIp.getText().toString(), Integer.parseInt(serverPort.getText().toString()), callbacks);
                                 client.start();
-                                Timer timer = new Timer();
-                                timer.schedule(new TimerTask() {
-                                    @Override
-                                    public void run() {
-                                        KeyValueList list = generateRegisterMessage();
-                                        client.setMessage(list);
-                                    }
-                                }, 500);
+                                KeyValueList list = generateRegisterMessage();
+                                sendMessage(list);
                             }
                         }
                     });
@@ -189,15 +183,8 @@ public class MainActivity extends AppCompatActivity {
                                 client.killThread();
                                 connectToServerButton.setText("Connect");
                             } else {
-
-                                Timer timer = new Timer();
-                                timer.schedule(new TimerTask() {
-                                    @Override
-                                    public void run() {
-                                        KeyValueList list = generateConnectMessage();
-                                        client.setMessage(list);
-                                    }
-                                }, 100);
+                                KeyValueList list = generateConnectMessage();
+                                sendMessage(list);
 
                                 connectToServerButton.setText(DISCOONECTED);
                             }

@@ -6,6 +6,8 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentStatePagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -25,8 +27,12 @@ import java.util.TimerTask;
 public class MainActivity extends AppCompatActivity {
     public static final String TAG = "VotingSoftware";
 
+    // fragment viewer
     private SectionsPagerAdapter mSectionsPagerAdapter;
     private ViewPager mViewPager;
+
+    // sms receiver
+    private InputProcessor smsReceiver;
 
     private static Button connectToServerButton,registerToServerButton;
 
@@ -46,6 +52,8 @@ public class MainActivity extends AppCompatActivity {
     public static final int CONNECTED = 1;
     public static final int DISCONNECTED = 2;
     public static final int MESSAGE_RECEIVED = 3;
+
+    private static final int SMS_PERMISSION_CODE = 100;
 
     static Handler callbacks = new Handler(){
         @Override
@@ -89,6 +97,18 @@ public class MainActivity extends AppCompatActivity {
         mViewPager = (ViewPager) findViewById(R.id.container);
         mViewPager.setAdapter(mSectionsPagerAdapter);
 
+        smsReceiver = new InputProcessor();
+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+
+            if
+            (checkSelfPermission(Manifest.permission.RECEIVE_SMS) == PackageManager.PERMISSION_DENIED) {
+
+                Log.d("permission", "permission denied to RECEIVE_SMS - requesting it");
+                String[] permissions = {Manifest.permission.RECEIVE_SMS};
+                requestPermissions(permissions, SMS_PERMISSION_CODE);
+            }
+        }
 
     }
 

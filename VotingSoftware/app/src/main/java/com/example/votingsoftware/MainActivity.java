@@ -7,6 +7,7 @@ import androidx.fragment.app.FragmentStatePagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
 import android.Manifest;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
@@ -21,6 +22,8 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.Enumeration;
+import java.util.Hashtable;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -34,18 +37,28 @@ public class MainActivity extends AppCompatActivity {
     // sms receiver
     private InputProcessor smsReceiver;
 
-    private static Button connectToServerButton,registerToServerButton;
+    // voting tables
+    private Hashtable<String, Integer> tallyTable;
+    private Hashtable<String, String> voterTable;
 
+    // logic vars
+    private boolean pollOpen;
+
+    // ui elements
+    private static Button connectToServerButton,registerToServerButton, editCandidatesButton, startPollButton, printResultsButton;
     private static EditText serverIp,serverPort;
+    private static TextView messageReceivedListText, resultsText, candidatesList, tallyList;
 
     static ComponentSocket client;
 
-    private static TextView messageReceivedListText;
+
 
     private static final String SENDER = "VotingSoftware";
     private static final String REGISTERED = "Registered";
     private static final String DISCOONECTED =  "Disconnect";
     private static final String SCOPE = "SIS.Scope1";
+    private static final String START_POLL = "Start Poll";
+    private static final String END_POLL = "End Poll";
 
     private KeyValueList readingMessage;
 
@@ -89,6 +102,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        pollOpen = false;
         // Create the adapter that will return a fragment for each of the three
         // primary sections of the activity.
         mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
@@ -97,7 +111,12 @@ public class MainActivity extends AppCompatActivity {
         mViewPager = (ViewPager) findViewById(R.id.container);
         mViewPager.setAdapter(mSectionsPagerAdapter);
 
+        // Set up the sms receiver
         smsReceiver = new InputProcessor();
+        smsReceiver.setMainActivityHandler(this);
+        IntentFilter fltr_smsreceived = new IntentFilter("android.provider.Telephony.SMS_RECEIVED");
+        registerReceiver(smsReceiver, fltr_smsreceived);
+
 
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
 
@@ -110,6 +129,63 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
+        // init tables
+        tallyTable = new Hashtable<String, Integer>();
+        voterTable = new Hashtable<String, String>();
+
+    }
+
+    public Hashtable<String, Integer> getTallyTable() {
+        return (Hashtable<String, Integer>) tallyTable.clone();
+    }
+
+    public Hashtable<String, String> getVoterTable() {
+        return (Hashtable<String, String>) voterTable.clone();
+    }
+
+    public void handleVote(String voterPhoneNo, String candidateID) {
+        String tMsg = voterPhoneNo + " : " + candidateID;
+        Toast.makeText(MainActivity.this, tMsg, Toast.LENGTH_LONG).show();
+
+        if(!isPollOpen()){
+            return;
+        }
+
+        if (voterTable.containsKey(voterPhoneNo)) {
+            // duplicate vote
+            // toast
+            return;
+        }
+        else {
+            // register number in voterTable
+            voterTable.put(voterPhoneNo, candidateID);
+        }
+        if(tallyTable.containsKey(candidateID)) {
+            // increment total
+            int curTotal = tallyTable.get(candidateID);
+            tallyTable.put(candidateID, curTotal + 1);
+        }
+        else {
+            // add candidate and give one vote
+            tallyTable.put(candidateID, 1);
+        }
+    }
+
+    public void clearTables() {
+        voterTable.clear();
+        tallyTable.clear();
+    }
+
+    public void startPoll() {
+        pollOpen = true;
+    }
+
+    public void endPoll() {
+        pollOpen = false;
+    }
+
+    public boolean isPollOpen() {
+        return pollOpen;
     }
 
 
@@ -215,8 +291,53 @@ public class MainActivity extends AppCompatActivity {
             }
             else if(num==2){
                 if(rootView2==null){
-                    rootView1 = inflater.inflate(R.layout.voting_config, container, false);
+                    rootView2 = inflater.inflate(R.layout.voting_config, container, false);
                     //set up voting config
+                    editCandidatesButton = (Button) rootView2.findViewById(R.id.editCandidatesButton);
+                    startPollButton = (Button) rootView2.findViewById(R.id.startPollButton);
+                    printResultsButton = (Button) rootView2.findViewById(R.id.printResultsButton);
+                    resultsText = (TextView) rootView2.findViewById(R.id.resultsText);
+                    candidatesList = (TextView) rootView2.findViewById(R.id.candidatesList);
+                    tallyList = (TextView) rootView2.findViewById(R.id.tallyList);
+
+                    startPollButton.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            if(startPollButton.getText().toString().equalsIgnoreCase(START_POLL)) {
+                                // reset tables
+                                ((MainActivity) getActivity()).clearTables();
+                                candidatesList.setText("");
+                                tallyList.setText("");
+                                // start poll
+                                ((MainActivity)getActivity()).startPoll();
+                                // change text
+                                startPollButton.setText(END_POLL);
+                            }
+                            else {
+                                //end poll
+                                ((MainActivity)getActivity()).endPoll();
+                                //change text
+                                startPollButton.setText(START_POLL);
+                            }
+                        }
+                    });
+                    printResultsButton.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            // print tallyTable
+                            // keys in candidatesList , vals in tallyList
+                            candidatesList.setText("");
+                            tallyList.setText("");
+                            // get copy of tallyTable
+                            Hashtable<String, Integer> tallyTable = ((MainActivity)getActivity()).getTallyTable();
+                            for(Enumeration<String> e = tallyTable.keys(); e.hasMoreElements();) {
+                                String candidate = e.nextElement();
+                                candidatesList.append(candidate + "\n");
+                                tallyList.append(tallyTable.get(candidate) + "\n");
+                            }
+                        }
+                    });
+
                 }
                 return rootView2;
             }
@@ -271,6 +392,24 @@ public class MainActivity extends AppCompatActivity {
         //Set the name of the component
         list.putPair("Name",SENDER);
         list.putPair("Receiver",recipient);
+        return list;
+    }
+
+    //Generate a vote
+    static KeyValueList generateVoteMessage(String voterPhoneNo, String candidateID){
+        KeyValueList list = new KeyValueList();
+        //Set the scope of the message
+        list.putPair("Scope",SCOPE);
+        //Set the message type
+        list.putPair("MessageType","701");
+        //Set the sender or name of the message
+        list.putPair("Sender",SENDER);
+        //Set the role of the message
+        list.putPair("Role","Basic");
+        //Set the name of the component
+        list.putPair("Name",SENDER);
+        list.putPair("VoterPhoneNo", voterPhoneNo);
+        list.putPair("CandidateID", candidateID);
         return list;
     }
 

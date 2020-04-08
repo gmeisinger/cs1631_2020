@@ -57,8 +57,8 @@ public class MainActivity extends AppCompatActivity {
     private static final String REGISTERED = "Registered";
     private static final String DISCOONECTED =  "Disconnect";
     private static final String SCOPE = "SIS.Scope1";
-    private static final String START_POLL = "Start Poll";
-    private static final String END_POLL = "End Poll";
+    private static final String START_POLL = "START POLL";
+    private static final String END_POLL = "END POLL";
 
     private KeyValueList readingMessage;
 
@@ -333,7 +333,12 @@ public class MainActivity extends AppCompatActivity {
                             for(Enumeration<String> e = tallyTable.keys(); e.hasMoreElements();) {
                                 String candidate = e.nextElement();
                                 candidatesList.append(candidate + "\n");
-                                tallyList.append(tallyTable.get(candidate) + "\n");
+                                if(tallyTable.get(candidate) > 1) {
+                                    tallyList.append( ( 100 / tallyTable.get(candidate) ) + "% (" + tallyTable.get(candidate) + " votes)\n");
+                                } else {
+                                    tallyList.append( ( 100 / tallyTable.get(candidate) ) + "% (" + tallyTable.get(candidate) + " vote)\n");
+                                }
+
                             }
                         }
                     });

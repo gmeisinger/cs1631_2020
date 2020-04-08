@@ -12,6 +12,7 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.telephony.SmsManager;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -127,6 +128,13 @@ public class MainActivity extends AppCompatActivity {
                 String[] permissions = {Manifest.permission.RECEIVE_SMS};
                 requestPermissions(permissions, SMS_PERMISSION_CODE);
             }
+            if
+            (checkSelfPermission(Manifest.permission.SEND_SMS) == PackageManager.PERMISSION_DENIED) {
+
+                Log.d("permission", "permission denied to SEND_SMS - requesting it");
+                String[] permissions = {Manifest.permission.SEND_SMS};
+                requestPermissions(permissions, SMS_PERMISSION_CODE);
+            }
         }
 
         // init tables
@@ -143,22 +151,37 @@ public class MainActivity extends AppCompatActivity {
         return (Hashtable<String, String>) voterTable.clone();
     }
 
+    @SuppressWarnings("deprecation")
+    private void sendText(String msg, String phoneNo) {
+        Log.v("phoneNumber",phoneNo);
+        Log.v("Message",msg);
+        SmsManager sms = SmsManager.getDefault();
+        sms.sendTextMessage(phoneNo, null, msg, null, null);
+    }
+
     public void handleVote(String voterPhoneNo, String candidateID) {
+        String responseMsg = "";
         String tMsg = voterPhoneNo + " : " + candidateID;
         Toast.makeText(MainActivity.this, tMsg, Toast.LENGTH_LONG).show();
 
         if(!isPollOpen()){
+            responseMsg = "Sorry, Polls are closed.";
+            sendText(responseMsg, voterPhoneNo);
             return;
         }
 
         if (voterTable.containsKey(voterPhoneNo)) {
             // duplicate vote
             // toast
+            responseMsg = "Only one vote allowed per device.";
+            sendText(responseMsg, voterPhoneNo);
             return;
         }
         else {
             // register number in voterTable
             voterTable.put(voterPhoneNo, candidateID);
+            responseMsg = "Vote received for " + candidateID + ".";
+            sendText(responseMsg, voterPhoneNo);
         }
         if(tallyTable.containsKey(candidateID)) {
             // increment total

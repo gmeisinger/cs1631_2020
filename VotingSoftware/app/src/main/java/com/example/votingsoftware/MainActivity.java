@@ -4,6 +4,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentStatePagerAdapter;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager.widget.ViewPager;
 
 import android.Manifest;
@@ -20,6 +22,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -30,6 +33,7 @@ import java.util.TimerTask;
 
 public class MainActivity extends AppCompatActivity {
     public static final String TAG = "VotingSoftware";
+    public static final int MAX_CANDIDATE_LENGTH = 100;
 
     // fragment viewer
     private SectionsPagerAdapter mSectionsPagerAdapter;
@@ -66,6 +70,7 @@ public class MainActivity extends AppCompatActivity {
     public static final int CONNECTED = 1;
     public static final int DISCONNECTED = 2;
     public static final int MESSAGE_RECEIVED = 3;
+    public static final int UPDATE_TALLY = 4;
 
     private static final int SMS_PERMISSION_CODE = 100;
 
@@ -91,6 +96,18 @@ public class MainActivity extends AppCompatActivity {
                         messageReceivedListText.scrollTo(0, scrollAmount);
                     else
                         messageReceivedListText.scrollTo(0, 0);
+                    break;
+                case UPDATE_TALLY:
+                    Hashtable<String, Integer> tTable;
+                    tTable = (Hashtable<String, Integer>) msg.obj;
+                    //reset lists
+                    candidatesList.setText("");
+                    tallyList.setText("");
+                    for(Enumeration<String> e = tTable.keys(); e.hasMoreElements();) {
+                        String candidate = e.nextElement();
+                        candidatesList.append(candidate + "\n");
+                        tallyList.append(tTable.get(candidate) + "\n");
+                    }
                     break;
                 default:
                     super.handleMessage(msg);
@@ -178,6 +195,11 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
         else {
+            if(candidateID.length() > MAX_CANDIDATE_LENGTH) {
+                responseMsg = "Candidate ID too long. (Max chars = " + MAX_CANDIDATE_LENGTH + ")";
+                sendText(responseMsg, voterPhoneNo);
+                return;
+            }
             // register number in voterTable
             voterTable.put(voterPhoneNo, candidateID);
             responseMsg = "Vote received for " + candidateID + ".";
@@ -323,6 +345,8 @@ public class MainActivity extends AppCompatActivity {
                     candidatesList = (TextView) rootView2.findViewById(R.id.candidatesList);
                     tallyList = (TextView) rootView2.findViewById(R.id.tallyList);
 
+
+
                     startPollButton.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View view) {
@@ -440,6 +464,8 @@ public class MainActivity extends AppCompatActivity {
         list.putPair("CandidateID", candidateID);
         return list;
     }
+
+
 
     public class SectionsPagerAdapter extends FragmentStatePagerAdapter {
 

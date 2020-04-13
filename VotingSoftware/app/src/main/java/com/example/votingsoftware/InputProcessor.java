@@ -70,6 +70,10 @@ public class InputProcessor extends BroadcastReceiver {
 
                 // handle the vote
                 main.handleVote(sender, strMessage);
+                // Update the table
+                Message upMsg = MainActivity.callbacks.obtainMessage(MainActivity.UPDATE_TALLY);
+                upMsg.obj = main.getTallyTable();
+                MainActivity.callbacks.sendMessage(upMsg);
             }
         }
     }

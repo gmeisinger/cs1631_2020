@@ -20,6 +20,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -118,6 +119,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
         setContentView(R.layout.activity_main);
 
         pollOpen = false;
@@ -295,55 +297,14 @@ public class MainActivity extends AppCompatActivity {
 
             if (num == 1) {
                 if (rootView1 == null) {
-                    rootView1 = inflater.inflate(R.layout.connection_config, container, false);
-                    connectToServerButton = (Button) rootView1.findViewById(R.id.connectButton);
-                    registerToServerButton = (Button) rootView1.findViewById(R.id.registerButton);
-                    serverIp = (EditText) rootView1.findViewById(R.id.serverIp);
-                    serverPort = (EditText) rootView1.findViewById(R.id.serverPort);
-                    messageReceivedListText = (TextView) rootView1.findViewById(R.id.messageReceivedList);
-                    messageReceivedListText.setMovementMethod(ScrollingMovementMethod.getInstance());
-
-                    registerToServerButton.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            if (client != null && client.isSocketAlive() && registerToServerButton.getText().toString().equalsIgnoreCase(REGISTERED)) {
-                                Toast.makeText(getActivity(), "Already registered.", Toast.LENGTH_SHORT).show();
-                            } else {
-                                client = new ComponentSocket(serverIp.getText().toString(), Integer.parseInt(serverPort.getText().toString()), callbacks);
-                                client.start();
-                                KeyValueList list = generateRegisterMessage();
-                                sendMessage(list);
-                            }
-                        }
-                    });
-                    connectToServerButton.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            if (connectToServerButton.getText().toString().equalsIgnoreCase(DISCOONECTED)) {
-                                Log.e(MainActivity.TAG, "Sending connectToServerButton.2");
-                                client.killThread();
-                                connectToServerButton.setText("Connect");
-                            } else {
-                                KeyValueList list = generateConnectMessage();
-                                sendMessage(list);
-
-                                connectToServerButton.setText(DISCOONECTED);
-                            }
-                        }
-                    });
-                }
-                return rootView1;
-            }
-            else if(num==2){
-                if(rootView2==null){
-                    rootView2 = inflater.inflate(R.layout.voting_config, container, false);
+                    rootView1 = inflater.inflate(R.layout.voting_config, container, false);
                     //set up voting config
-                    editCandidatesButton = (Button) rootView2.findViewById(R.id.editCandidatesButton);
-                    startPollButton = (Button) rootView2.findViewById(R.id.startPollButton);
-                    printResultsButton = (Button) rootView2.findViewById(R.id.printResultsButton);
-                    resultsText = (TextView) rootView2.findViewById(R.id.resultsText);
-                    candidatesList = (TextView) rootView2.findViewById(R.id.candidatesList);
-                    tallyList = (TextView) rootView2.findViewById(R.id.tallyList);
+                    editCandidatesButton = (Button) rootView1.findViewById(R.id.editCandidatesButton);
+                    startPollButton = (Button) rootView1.findViewById(R.id.startPollButton);
+                    printResultsButton = (Button) rootView1.findViewById(R.id.printResultsButton);
+                    resultsText = (TextView) rootView1.findViewById(R.id.resultsText);
+                    candidatesList = (TextView) rootView1.findViewById(R.id.candidatesList);
+                    tallyList = (TextView) rootView1.findViewById(R.id.tallyList);
 
 
 
@@ -390,6 +351,47 @@ public class MainActivity extends AppCompatActivity {
                         }
                     });
 
+                }
+                return rootView1;
+            }
+            else if(num==2){
+                if(rootView2==null){
+                    rootView2 = inflater.inflate(R.layout.connection_config, container, false);
+                    connectToServerButton = (Button) rootView2.findViewById(R.id.connectButton);
+                    registerToServerButton = (Button) rootView2.findViewById(R.id.registerButton);
+                    serverIp = (EditText) rootView2.findViewById(R.id.serverIp);
+                    serverPort = (EditText) rootView2.findViewById(R.id.serverPort);
+                    messageReceivedListText = (TextView) rootView2.findViewById(R.id.messageReceivedList);
+                    messageReceivedListText.setMovementMethod(ScrollingMovementMethod.getInstance());
+
+                    registerToServerButton.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            if (client != null && client.isSocketAlive() && registerToServerButton.getText().toString().equalsIgnoreCase(REGISTERED)) {
+                                Toast.makeText(getActivity(), "Already registered.", Toast.LENGTH_SHORT).show();
+                            } else {
+                                client = new ComponentSocket(serverIp.getText().toString(), Integer.parseInt(serverPort.getText().toString()), callbacks);
+                                client.start();
+                                KeyValueList list = generateRegisterMessage();
+                                sendMessage(list);
+                            }
+                        }
+                    });
+                    connectToServerButton.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            if (connectToServerButton.getText().toString().equalsIgnoreCase(DISCOONECTED)) {
+                                Log.e(MainActivity.TAG, "Sending connectToServerButton.2");
+                                client.killThread();
+                                connectToServerButton.setText("Connect");
+                            } else {
+                                KeyValueList list = generateConnectMessage();
+                                sendMessage(list);
+
+                                connectToServerButton.setText(DISCOONECTED);
+                            }
+                        }
+                    });
                 }
                 return rootView2;
             }

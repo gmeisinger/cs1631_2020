@@ -52,8 +52,9 @@
 
         <TextView
             android:id="@+id/candidatesList"
-            android:layout_width="286dp"
+            android:layout_width="223dp"
             android:layout_height="match_parent"
+            android:scrollHorizontally="true"
             android:text="Candidates" />
 
         <TextView
@@ -112,7 +113,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:background="@drawable/button_rounded"
-            android:text="GET RESULTS"
+            android:text="SEND RESULTS"
             android:textAppearance="@style/TextAppearance.AppCompat.Display1"
             android:textColor="#FFFFFF"
             android:textSize="18sp"
@@ -131,16 +132,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal">
-
-        <Button
-            android:id="@+id/editCandidatesButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@android:color/transparent"
-            android:minHeight="60dip"
-            android:text="Candidates"
-            android:textColor="#808080"
-            android:textSize="18sp" />
 
         <Space
             android:layout_width="match_parent"

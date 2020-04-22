@@ -104,10 +104,20 @@ public class MainActivity extends AppCompatActivity {
                     //reset lists
                     candidatesList.setText("");
                     tallyList.setText("");
+                    int total = 0;
+                    for(Enumeration<String> e = tTable.keys(); e.hasMoreElements();) {
+                        String cand = e.nextElement();
+                        total += tTable.get(cand);
+                    }
                     for(Enumeration<String> e = tTable.keys(); e.hasMoreElements();) {
                         String candidate = e.nextElement();
                         candidatesList.append(candidate + "\n");
-                        tallyList.append(tTable.get(candidate) + "\n");
+                        if(tTable.get(candidate) > 1) {
+                            tallyList.append( ( (100 * tTable.get(candidate)) / total ) + "% (" + tTable.get(candidate) + " votes)\n");
+                        } else {
+                            tallyList.append( ( (100 * tTable.get(candidate)) / total ) + "% (" + tTable.get(candidate) + " vote)\n");
+                        }
+
                     }
                     break;
                 default:
@@ -185,7 +195,8 @@ public class MainActivity extends AppCompatActivity {
 
         if(!isPollOpen()){
             responseMsg = "Sorry, Polls are closed.";
-            sendText(responseMsg, voterPhoneNo);
+            //sendText(responseMsg, voterPhoneNo);
+            // this text seemed like too much
             return;
         }
 
@@ -256,6 +267,32 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    // send results to participants
+    public void sendResults() {
+        //create text
+        String msg = "Voting Results:\n";
+        int total = 0;
+        for(Enumeration<String> e = tallyTable.keys(); e.hasMoreElements();) {
+            String cand = e.nextElement();
+            total += tallyTable.get(cand);
+        }
+        for(Enumeration<String> e = tallyTable.keys(); e.hasMoreElements();) {
+            String candidate = e.nextElement();
+            String votes = "";
+            if(tallyTable.get(candidate) > 1) {
+                votes = ( (100 * tallyTable.get(candidate)) / total ) + "% (" + tallyTable.get(candidate) + " votes)\n";
+            } else {
+                votes = ( (100 * tallyTable.get(candidate)) / total ) + "% (" + tallyTable.get(candidate) + " vote)\n";
+            }
+            String line = candidate + " : " + votes + "\n";
+            msg = msg + line;
+        }
+        // send text
+        for(Enumeration<String> e = voterTable.keys(); e.hasMoreElements();) {
+            String phoneNo = e.nextElement();
+            sendText(msg, phoneNo);
+        }
+    }
 
     /**
      * A placeholder fragment containing a simple view.
@@ -299,9 +336,11 @@ public class MainActivity extends AppCompatActivity {
                 if (rootView1 == null) {
                     rootView1 = inflater.inflate(R.layout.voting_config, container, false);
                     //set up voting config
-                    editCandidatesButton = (Button) rootView1.findViewById(R.id.editCandidatesButton);
+                    //editCandidatesButton = (Button) rootView1.findViewById(R.id.editCandidatesButton);
                     startPollButton = (Button) rootView1.findViewById(R.id.startPollButton);
                     printResultsButton = (Button) rootView1.findViewById(R.id.printResultsButton);
+                    printResultsButton.setEnabled(false);
+                    printResultsButton.setAlpha(0.5f);
                     resultsText = (TextView) rootView1.findViewById(R.id.resultsText);
                     candidatesList = (TextView) rootView1.findViewById(R.id.candidatesList);
                     tallyList = (TextView) rootView1.findViewById(R.id.tallyList);
@@ -312,6 +351,8 @@ public class MainActivity extends AppCompatActivity {
                         @Override
                         public void onClick(View view) {
                             if(startPollButton.getText().toString().equalsIgnoreCase(START_POLL)) {
+                                printResultsButton.setEnabled(false);
+                                printResultsButton.setAlpha(0.5f);
                                 // reset tables
                                 ((MainActivity) getActivity()).clearTables();
                                 candidatesList.setText("");
@@ -326,28 +367,19 @@ public class MainActivity extends AppCompatActivity {
                                 ((MainActivity)getActivity()).endPoll();
                                 //change text
                                 startPollButton.setText(START_POLL);
+                                printResultsButton.setAlpha(1.0f);
+                                printResultsButton.setEnabled(true);
                             }
                         }
                     });
                     printResultsButton.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View view) {
-                            // print tallyTable
-                            // keys in candidatesList , vals in tallyList
-                            candidatesList.setText("");
-                            tallyList.setText("");
+
                             // get copy of tallyTable
                             Hashtable<String, Integer> tallyTable = ((MainActivity)getActivity()).getTallyTable();
-                            for(Enumeration<String> e = tallyTable.keys(); e.hasMoreElements();) {
-                                String candidate = e.nextElement();
-                                candidatesList.append(candidate + "\n");
-                                if(tallyTable.get(candidate) > 1) {
-                                    tallyList.append( ( 100 / tallyTable.get(candidate) ) + "% (" + tallyTable.get(candidate) + " votes)\n");
-                                } else {
-                                    tallyList.append( ( 100 / tallyTable.get(candidate) ) + "% (" + tallyTable.get(candidate) + " vote)\n");
-                                }
-
-                            }
+                            //send results
+                            ((MainActivity)getActivity()).sendResults();
                         }
                     });
 
